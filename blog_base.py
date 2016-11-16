@@ -6,7 +6,7 @@ class BlogPost(db.Model):
 	subject= db.StringProperty(required=True)
 	content=db.TextProperty(required=True)
 	created=db.DateTimeProperty(auto_now_add=True)
-
+    modified=db.DateTimeProperty(auto_now=True)
 app = Flask(__name__)
 
 @app.route('/')
