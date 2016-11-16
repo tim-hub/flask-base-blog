@@ -1,0 +1,12 @@
+body {
+    width: 960px;
+    margin: auto;
+}
+
+.test{
+    color:green;
+}
+
+.error{
+    color:red;
+}

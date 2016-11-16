@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>A Basic Blog</title>
+	<meta name="description" content="A Portfolio project" />
+  	<meta name="author" content="https://github.com/tim-hub">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<meta name="mobile-web-app-capable" content="yes">
+
+    <link rel="stylesheet" href="static/css/bootstrap.css">
+    <link rel="stylesheet" href="static/css/style.css">
+    {#    <link rel="stylesheet" href="{{ url_for('static', filename='/styles.css') }}">#}
+</head>
+<body>
+    {% include 'header.html' %}
+    {% block content %}
+
+    {% endblock content %}
+    {%  include 'footer.html' %}
+    <script src="/static/js/bootstrap.js"></script>
+</body>
+</html>
