@@ -1,4 +1,18 @@
 {% extends 'base.html' %}
 {% block content %}
-    get info from db
+    <h2> A Basic Blog</h2>
+    <a href="/newpost">
+        <button >create a new post from here</button>
+    </a>
+    {% for post in posts %}
+		<div class="post">
+			<div class="post-subject">
+                <a href="/post/{{ post.key().id()}}" >
+                {{post.subject}}
+                </a>
+            </div>
+			<pre class="post-content">{{post.content}} </pre>
+		</div>
+		<hr>
+	{% endfor %}
 {% endblock content %}

@@ -11,25 +11,34 @@ app = Flask(__name__)
 
 @app.route('/')
 def home():
-    return render_template('home.html')
+    posts=db.GqlQuery("Select * from BlogPost Order By created DESC")
+    return render_template('home.html', posts=posts)
 
 @app.route('/newpost', methods=['GET', 'POST'])
 def new_post():
     if request.method=='POST':
-        subject=request.form('subject')
-        content=request.form('content')
+        subject=request.form['subject']
+        content=request.form['content']
 
         if subject and content:
-            post=BlogPost(subject=subject,content=content)
-            post.put()
-            return redirect('/')
+            blog_post=BlogPost(subject=subject,content=content)
+            blog_post.put()
+            id = (blog_post.key().id())
+            if id :
+                return redirect('/post/%s' %id)
+            else:
+                print ("something wrong, there is no post id")
         else:
-            pass
-        return render_template("new_post.html")
+            return render_template("new_post.html", error="Both subject and content are needed")
+
     else:
         return render_template("new_post.html")
 
-
+@app.route('/post/<post_id>/')
+def show_post(post_id):
+    print ("show post, id is %s" %post_id)
+    blog_post=BlogPost.get_by_id(long(post_id))
+    return render_template('post.html', subject=blog_post.subject, content=blog_post.content)
 
 if __name__ == '__main__':
     app.run()

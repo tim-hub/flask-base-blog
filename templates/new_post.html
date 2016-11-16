@@ -2,16 +2,17 @@
 {%  block content %}
     <h1> New Post </h1>
 	<form method="post">
-		<label class="test">
+		<label class="test col-xs-12">
 			<div>Subject</div>
-			<input type="text" name="subject" value="{{title}}">
+			<input type="text" name="subject" class="subject" value="{{title}}">
 		</label>
-		<label>
+        <br/>
+		<label class="col-xs-12" >
 			<div>Content</div>
-			<textarea name="content">{{ art }}</textarea>
+			<textarea name="content" class="content">{{ art }}</textarea>
 		</label>
 		<br/>
-		<div class="error">
+		<div class="error col-xs-6">
 		{{error}}
 		</div>
 		<br/>
