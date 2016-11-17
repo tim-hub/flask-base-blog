@@ -11,7 +11,7 @@ app = Flask(__name__)
 
 @app.route('/')
 def home():
-    posts=db.GqlQuery("Select * from BlogPost Order By created DESC")
+    posts=db.GqlQuery("Select * from BlogPost Order By created DESC") #maybe add limit 10 to gql
     return render_template('home.html', posts=posts)
 
 @app.route('/newpost', methods=['GET', 'POST'])
