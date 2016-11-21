@@ -7,3 +7,7 @@ handlers:
   static_dir: static
 - url: /.*
   script: blog_base.app
+
+#libraries:
+#- name: flask-bcrypt
+#  version: latest

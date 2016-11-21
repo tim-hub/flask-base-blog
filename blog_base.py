@@ -1,6 +1,9 @@
-from flask import Flask, render_template, request, redirect, make_response
+from flask import Flask, flash, render_template, request, redirect, make_response
 from werkzeug.security import generate_password_hash, \
      check_password_hash
+from flask_wtf import FlaskForm
+from wtforms import StringField
+from wtforms.validators import DataRequired
 import logging
 from google.appengine.ext import db
 
@@ -15,6 +18,8 @@ class BlogPost(db.Model):
 
 
 app = Flask(__name__)
+# this is for flash message
+app.secret_key = 'some_secret'
 
 def encrypt_val(s):
     return generate_password_hash(s)
@@ -58,7 +63,9 @@ def show_post(post_id):
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     if request.method=='GET':
-        return ("sign up")
+        page=render_template('signup.html')
+        flash("hi")
+        return redirect('/')
     else:
         pass
 
