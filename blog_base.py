@@ -2,10 +2,20 @@ from flask import Flask, flash, render_template, request, redirect, make_respons
 from werkzeug.security import generate_password_hash, \
      check_password_hash
 from flask_wtf import FlaskForm
-from wtforms import StringField
-from wtforms.validators import DataRequired
+from wtforms import Form, BooleanField, StringField, PasswordField, validators
+# from wtforms.validators import DataRequired
+from flask_wtf.csrf import CsrfProtect
+
 import logging
 from google.appengine.ext import db
+
+# init app
+# csrf = CsrfProtect()
+app = Flask(__name__)
+# csrf.init_app(app)
+
+# this is for flash message
+app.secret_key = 'some_secret'
 
 '''
 This is google datastore model to store post
@@ -15,11 +25,23 @@ class BlogPost(db.Model):
     content=db.TextProperty(required=True)
     modified=db.DateTimeProperty(auto_now=True)
     created=db.DateTimeProperty(auto_now_add=True)
+class User(db.Model):
+    name= db.StringProperty(required=True)
+    password=db.StringProperty(required=True)
+    email=db.EmailProperty(required=False)
+    created=db.DateTimeProperty(auto_now=True)
 
+class RegistrationForm(Form):
+    username = StringField('Username', [validators.Length(min=3, max=20)])
 
-app = Flask(__name__)
-# this is for flash message
-app.secret_key = 'some_secret'
+    password = PasswordField('New Password', [
+        validators.Length(min=3, max=20),
+        validators.DataRequired()])
+    confirm = PasswordField('Repeat Password',
+        [validators.EqualTo('password', message='Passwords must match')
+    ])
+    email = StringField('Email Address',[validators.Email(), validators.Optional()])
+    # accept_tos = BooleanField('I accept the TOS', [validators.DataRequired()])
 
 def encrypt_val(s):
     return generate_password_hash(s)
@@ -62,12 +84,18 @@ def show_post(post_id):
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
-    if request.method=='GET':
-        page=render_template('signup.html')
-        flash("hi")
-        return redirect('/')
+    form = RegistrationForm(request.form)
+    if (request.method == 'POST' and form.validate()):
+        flash('Thanks for registering')
+        return redirect('/welcome')
     else:
-        pass
+        page = render_template('signup.html', form=form)
+
+        return page
+
+@app.route('/welcome', methods=['GET'])
+def welcome():
+    return "welcome"
 
 
 if __name__ == '__main__':
