@@ -101,7 +101,7 @@ def signup():
 @app.route('/welcome', methods=['GET'])
 def welcome():
     name=request.cookies.get('username')
-    return "welcome %s" % name
+    return render_template('welcome.html', name=name)
 
 
 if __name__ == '__main__':
