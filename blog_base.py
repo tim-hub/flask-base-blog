@@ -37,7 +37,7 @@ class RegistrationForm(Form):
     password = PasswordField('New Password', [
         validators.Length(min=3, max=20),
         validators.DataRequired()])
-    confirm = PasswordField('Repeat Password',
+    verify = PasswordField('Repeat Password',
         [validators.EqualTo('password', message='Passwords must match')
     ])
     email = StringField('Email Address',[validators.Email(), validators.Optional()])
@@ -86,8 +86,13 @@ def show_post(post_id):
 def signup():
     form = RegistrationForm(request.form)
     if (request.method == 'POST' and form.validate()):
-        flash('Thanks for registering')
-        return redirect('/welcome')
+        flash('Thanks for registering, %s' % form.username.data)
+
+        name_cookie=str(form.username.data)
+        redirect_to_welcome= redirect('/welcome')
+        resp=make_response(redirect_to_welcome)
+        resp.set_cookie('username',name_cookie)
+        return resp
     else:
         page = render_template('signup.html', form=form)
 
@@ -95,7 +100,8 @@ def signup():
 
 @app.route('/welcome', methods=['GET'])
 def welcome():
-    return "welcome"
+    name=request.cookies.get('username')
+    return "welcome %s" % name
 
 
 if __name__ == '__main__':
