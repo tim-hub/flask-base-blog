@@ -2,7 +2,7 @@ from flask import Flask, flash, render_template, request, redirect, make_respons
 from werkzeug.security import generate_password_hash, \
      check_password_hash
 from flask_wtf import FlaskForm
-from wtforms import Form, BooleanField, StringField, PasswordField, validators
+from wtforms import Form, BooleanField, StringField, PasswordField, validators, ValidationError
 # from wtforms.validators import DataRequired
 from flask_wtf.csrf import CsrfProtect
 
@@ -25,14 +25,28 @@ class BlogPost(db.Model):
     content=db.TextProperty(required=True)
     modified=db.DateTimeProperty(auto_now=True)
     created=db.DateTimeProperty(auto_now_add=True)
+
 class User(db.Model):
     name= db.StringProperty(required=True)
     password=db.StringProperty(required=True)
     email=db.EmailProperty(required=False)
     created=db.DateTimeProperty(auto_now=True)
 
-class RegistrationForm(Form):
-    username = StringField('Username', [validators.Length(min=3, max=20)])
+def get_this_user(name):
+    query = db.GqlQuery(' select *  from User where name = :name ', name=name)
+    return query
+
+def validate_username(form, field):
+    name = field.data
+    # print (field.data)
+    query = get_this_user(name)
+    # print ('checking and got %s %s' % (query.count(), query.fetch(1)))
+    if query.count(limit=2) >0:
+        raise ValidationError("Someone already registered this username")
+
+
+class SignUpForm(Form):
+    username = StringField('Username', [validators.Length(min=3, max=20), validate_username])
 
     password = PasswordField('New Password', [
         validators.Length(min=3, max=20),
@@ -41,13 +55,28 @@ class RegistrationForm(Form):
         [validators.EqualTo('password', message='Passwords must match')
     ])
     email = StringField('Email Address',[validators.Email(), validators.Optional()])
+
+
     # accept_tos = BooleanField('I accept the TOS', [validators.DataRequired()])
+class LoginForm(Form):
+    username= StringField('Username', [validators.DataRequired])
+    password= PasswordField('Password', [validators.DataRequired])
 
 def encrypt_val(s):
     return generate_password_hash(s)
 
 def check_val(h,s):
     return check_password_hash(h,s)
+
+def respect_with_cookie(next_url, **kwargs):
+    redirect_to_next_url = redirect(next_url)
+    resp = make_response(redirect_to_next_url)
+    for name, value in kwargs.items():
+        resp.set_cookie(name,value)
+    return resp
+
+def get_cookie():
+    pass
 
 @app.route('/')
 def home():
@@ -81,22 +110,44 @@ def show_post(post_id):
     return render_template('post.html', subject=blog_post.subject, content=blog_post.content)
 
 
-
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
-    form = RegistrationForm(request.form)
+    form = SignUpForm(request.form)
     if (request.method == 'POST' and form.validate()):
+        name=form.username.data
+        password=form.verify.data
+        pwd_encrypted=encrypt_val(password)
+        email=form.email.data
+        user=User(name=name,password=pwd_encrypted)
+        if email:
+            user.email=email
+        user.put()
+
         flash('Thanks for registering, %s' % form.username.data)
 
+        # set cookie
         name_cookie=str(form.username.data)
-        redirect_to_welcome= redirect('/welcome')
-        resp=make_response(redirect_to_welcome)
-        resp.set_cookie('username',name_cookie)
-        return resp
+        return respect_with_cookie('/welcome',username=name_cookie)
+
     else:
         page = render_template('signup.html', form=form)
-
         return page
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    form =LoginForm(request.form)
+    if(request.method=='POST' and form.validate()):
+        name=form.username.data
+        pwd=form.password.data
+
+        user=get_this_user(name)
+        if user:
+            u=user.fetch(limit=1)
+            if check_password_hash(u.password,pwd):
+
+                flash('Login Successfully, %s' % form.username.data)
+    else:
+        return render_template('login.html', form=form)
 
 @app.route('/welcome', methods=['GET'])
 def welcome():

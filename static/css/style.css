@@ -22,3 +22,6 @@ body {
 .blog-title{
 
 }
+.error{
+    color-rendering: red;
+}
