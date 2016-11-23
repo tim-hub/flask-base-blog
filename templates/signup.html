@@ -1,25 +1,5 @@
 {% extends "base.html" %}
 {% block content %}
-{#	<form method="post">#}
-{#		<label> username:#}
-{#			<input type="text" name="username"> {{ name_notice }}#}
-{#		</label>#}
-{#		<br/>#}
-{#		<label> password:#}
-{#			<input type="password" name="password"> {{ password_notice }}#}
-{#		</label>#}
-{#		<br/>#}
-{#		<label> again:#}
-{#			<input type="password" name="verify"> {{ verify_notice }}#}
-{#		</label>#}
-{#		<br/>#}
-{#		<label> email(optional):#}
-{#			<input type="text" name="email"> {{ email_notice }}#}
-{#		</label>#}
-{#		<br/>#}
-{#		<input class="mui-btn--accent" type="submit" value="Sign Up">#}
-{#	</form>#}
-
     {% macro render_field(field) %}
       <dt>{{ field.label }}
       <dd>{{ field(**kwargs)|safe }}

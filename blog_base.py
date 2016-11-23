@@ -1,15 +1,13 @@
 from flask import Flask, flash, render_template, request
-from werkzeug.security import generate_password_hash, \
-     check_password_hash
-from flask_wtf import FlaskForm
-from wtforms import Form, BooleanField, StringField, PasswordField, validators, ValidationError
 # from wtforms.validators import DataRequired
 from flask_wtf.csrf import CsrfProtect
 
 import logging
-from google.appengine.ext import db
 
-from cookie_manager import respect_with_cookie, get_cookie
+from cookie_manager import *
+from secure_manager import *
+from db_manager import *
+from forms_manager import *
 
 # init app
 # csrf = CsrfProtect()
@@ -19,62 +17,10 @@ app = Flask(__name__)
 # this is for flash message
 app.secret_key = 'some_secret'
 
-'''
-This is google datastore model to store post
-'''
-class BlogPost(db.Model):
-    subject= db.StringProperty(required=True)
-    content=db.TextProperty(required=True)
-    modified=db.DateTimeProperty(auto_now=True)
-    created=db.DateTimeProperty(auto_now_add=True)
-
-class User(db.Model):
-    name= db.StringProperty(required=True)
-    password=db.StringProperty(required=True)
-    email=db.EmailProperty(required=False)
-    created=db.DateTimeProperty(auto_now=True)
-
-def get_this_user(name):
-    query = db.GqlQuery(' select *  from User where name = :name ', name=name)
-    return query
-
-def validate_username(form, field):
-    name = field.data
-    # print (field.data)
-    query = get_this_user(name)
-    # print ('checking and got %s %s' % (query.count(), query.fetch(1)))
-    if query.count(limit=2) >0:
-        raise ValidationError("Someone already registered this username")
-
-
-class SignUpForm(Form):
-    username = StringField('Username', [validators.Length(min=3, max=20), validate_username])
-
-    password = PasswordField('New Password', [
-        validators.Length(min=3, max=20),
-        validators.DataRequired()])
-    verify = PasswordField('Repeat Password',
-        [validators.EqualTo('password', message='Passwords must match')
-    ])
-    email = StringField('Email Address',[validators.Email(), validators.Optional()])
-
-
-    # accept_tos = BooleanField('I accept the TOS', [validators.DataRequired()])
-class LoginForm(Form):
-    username= StringField('Username', [validators.DataRequired])
-    password= PasswordField('Password', [validators.DataRequired])
-
-def encrypt_val(s):
-    return generate_password_hash(s)
-
-def check_val(h,s):
-    return check_password_hash(h,s)
-
-
 
 @app.route('/')
 def home():
-    posts=db.GqlQuery("Select * from BlogPost Order By created DESC") #maybe add limit 10 to gql
+    posts= get_posts()
     return render_template('home.html', posts=posts)
 
 @app.route('/newpost', methods=['GET', 'POST'])
@@ -154,28 +100,28 @@ if __name__ == '__main__':
 
 
 
-'''
-this is only for test
-'''
-@app.route('/test-cookie', methods=['GET', 'POST'])
-def test_cookie():
-    if request.method=='POST':
-        pass
-    else:
-        visit_times = request.cookies.get('visits','0')
-        if visit_times.isdigit():
-            visit_times = int(visit_times) + 1
-        else:
-            visit_times=0
-
-        if visit_times>500:
-            resp = make_response(render_template('space.html', str='it is good'))
-            resp.set_cookie('visits', str(visit_times))
-        else:
-            resp = make_response(render_template('space.html', str='you visit %s times' %visit_times))
-            resp.set_cookie('visits', str(visit_times))
-
-        return resp
+# '''
+# this is only for test
+# '''
+# @app.route('/test-cookie', methods=['GET', 'POST'])
+# def test_cookie():
+#     if request.method=='POST':
+#         pass
+#     else:
+#         visit_times = request.cookies.get('visits','0')
+#         if visit_times.isdigit():
+#             visit_times = int(visit_times) + 1
+#         else:
+#             visit_times=0
+#
+#         if visit_times>500:
+#             resp = make_response(render_template('space.html', str='it is good'))
+#             resp.set_cookie('visits', str(visit_times))
+#         else:
+#             resp = make_response(render_template('space.html', str='you visit %s times' %visit_times))
+#             resp.set_cookie('visits', str(visit_times))
+#
+#         return resp
 
 @app.errorhandler(500)
 def server_error(e):

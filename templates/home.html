@@ -1,9 +1,18 @@
 {% extends 'base.html' %}
 {% block content %}
     <h2> A Basic Blog</h2>
-    <a href="/newpost">
-        <button class="mui-btn--primary">create a new post from here</button>
-    </a>
+    <div>
+        <a href="/newpost">
+            <button class="mui-btn--primary">NewPost</button>
+        </a>
+        <a href="/login">
+            <button class="mui-btn--primary">Login</button>
+        </a>
+        <a href ='/signup'>
+            <button class="mui-btn--primary">SignUp</button>
+        </a>
+    </div>
+    <hr>
     {% for post in posts %}
 		<div class="post">
 			<div class="post-subject mui--text-title">
