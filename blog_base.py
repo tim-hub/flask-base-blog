@@ -1,4 +1,4 @@
-from flask import Flask, flash, render_template, request, redirect, make_response
+from flask import Flask, flash, render_template, request
 from werkzeug.security import generate_password_hash, \
      check_password_hash
 from flask_wtf import FlaskForm
@@ -8,6 +8,8 @@ from flask_wtf.csrf import CsrfProtect
 
 import logging
 from google.appengine.ext import db
+
+from cookie_manager import respect_with_cookie, get_cookie
 
 # init app
 # csrf = CsrfProtect()
@@ -68,15 +70,7 @@ def encrypt_val(s):
 def check_val(h,s):
     return check_password_hash(h,s)
 
-def respect_with_cookie(next_url, **kwargs):
-    redirect_to_next_url = redirect(next_url)
-    resp = make_response(redirect_to_next_url)
-    for name, value in kwargs.items():
-        resp.set_cookie(name,value)
-    return resp
 
-def get_cookie():
-    pass
 
 @app.route('/')
 def home():
