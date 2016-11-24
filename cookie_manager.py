@@ -7,5 +7,11 @@ def respect_with_cookie(next_url, **kwargs):
         resp.set_cookie(name,value)
     return resp
 
-def get_cookie():
-    pass
+def get_cookie(req, name):
+    return  req.cookies.get(name)
+
+def login(req):
+    if get_cookie(req, 'username')
+        return True
+    else:
+        return False

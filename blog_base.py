@@ -83,9 +83,9 @@ def login():
         user=get_this_user(name)
         if user:
             u=user[0]
-            print user
-            print u.name
-            print u.password
+            # print user
+            # print u.name
+            # print u.password
             if check_password_hash(u.password,pwd):
                 flash('Login Successfully, %s' % form.username.data)
                 return respect_with_cookie('/welcome', username=u.name)
@@ -94,11 +94,23 @@ def login():
                 return render_template('login.html', form=form)
     else:
         return render_template('login.html', form=form)
+@app.route('/logout', methods=['GET'])
+def logout():
+    if get_cookie(request, 'username'):
+        return respect_with_cookie('/', username='')
+    else:
+        return 'you did not login'
+
 
 @app.route('/welcome', methods=['GET'])
 def welcome():
-    name=request.cookies.get('username')
-    return render_template('welcome.html', name=name)
+    name=get_cookie(request, 'username')
+
+    print name
+    if name:
+        return render_template('welcome.html', name=name)
+    else:
+        return redirect('/signup')
 
 
 if __name__ == '__main__':
