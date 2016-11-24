@@ -82,10 +82,16 @@ def login():
 
         user=get_this_user(name)
         if user:
-            u=user.fetch(limit=1)
+            u=user[0]
+            print user
+            print u.name
+            print u.password
             if check_password_hash(u.password,pwd):
-
                 flash('Login Successfully, %s' % form.username.data)
+                return respect_with_cookie('/welcome', username=u.name)
+            else:
+                flash('Wrong Logining' )
+                return render_template('login.html', form=form)
     else:
         return render_template('login.html', form=form)
 
@@ -97,31 +103,6 @@ def welcome():
 
 if __name__ == '__main__':
     app.run()
-
-
-
-# '''
-# this is only for test
-# '''
-# @app.route('/test-cookie', methods=['GET', 'POST'])
-# def test_cookie():
-#     if request.method=='POST':
-#         pass
-#     else:
-#         visit_times = request.cookies.get('visits','0')
-#         if visit_times.isdigit():
-#             visit_times = int(visit_times) + 1
-#         else:
-#             visit_times=0
-#
-#         if visit_times>500:
-#             resp = make_response(render_template('space.html', str='it is good'))
-#             resp.set_cookie('visits', str(visit_times))
-#         else:
-#             resp = make_response(render_template('space.html', str='you visit %s times' %visit_times))
-#             resp.set_cookie('visits', str(visit_times))
-#
-#         return resp
 
 @app.errorhandler(500)
 def server_error(e):

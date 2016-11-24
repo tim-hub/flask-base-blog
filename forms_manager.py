@@ -24,5 +24,5 @@ class SignUpForm(Form):
 
     # accept_tos = BooleanField('I accept the TOS', [validators.DataRequired()])
 class LoginForm(Form):
-    username= StringField('Username', [validators.DataRequired])
-    password= PasswordField('Password', [validators.DataRequired])
+    username= StringField('Username', [validators.DataRequired()])
+    password= PasswordField('Password', [validators.DataRequired()])
