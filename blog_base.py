@@ -67,7 +67,7 @@ def signup():
 
         # set cookie
         name_cookie=str(form.username.data)
-        return respect_with_cookie('/welcome',username=name_cookie)
+        return get_respect_with_cookie('/welcome',username=name_cookie)
 
     else:
         page = render_template('signup.html', form=form)
@@ -88,16 +88,17 @@ def login():
             # print u.password
             if check_password_hash(u.password,pwd):
                 flash('Login Successfully, %s' % form.username.data)
-                return respect_with_cookie('/welcome', username=u.name)
+                return get_respect_with_cookie('/welcome', username=u.name)
             else:
                 flash('Wrong Logining' )
                 return render_template('login.html', form=form)
     else:
         return render_template('login.html', form=form)
+
 @app.route('/logout', methods=['GET'])
 def logout():
     if get_cookie(request, 'username'):
-        return respect_with_cookie('/', username='')
+        return get_respect_with_cookie('/', username='')
     else:
         return 'you did not login'
 
@@ -107,10 +108,15 @@ def welcome():
     name=get_cookie(request, 'username')
 
     print name
-    if name:
-        return render_template('welcome.html', name=name)
-    else:
-        return redirect('/signup')
+    return render_template('welcome.html', name=name)
+    # if name:
+    #     return render_template('welcome.html', name=name)
+    # else:
+    #     return redirect('/signup')
+
+@app.route('/test', methods=['GET', 'POST'])
+def test():
+    return str(get_cookie(request,'test'))
 
 
 if __name__ == '__main__':
