@@ -1,22 +1,18 @@
+# from base_blog import app
+
 from flask import Flask, flash, render_template, request
 # from wtforms.validators import DataRequired
-from flask_wtf.csrf import CsrfProtect
+# from flask_wtf.csrf import CsrfProtect
 
 import logging
 
 from cookie_manager import *
-from secure_manager import *
 from db_manager import *
 from forms_manager import *
 
-# init app
-# csrf = CsrfProtect()
-app = Flask(__name__)
-# csrf.init_app(app)
-
-# this is for flash message
-app.secret_key = 'some_secret'
-
+app = Flask(__name__, instance_relative_config=True)
+app.config.from_object('config') # load config.py from root folder
+app.config.from_pyfile('config.py')  # load from instance folder
 
 @app.route('/')
 def home():
@@ -63,11 +59,13 @@ def signup():
             user.email=email
         user.put()
 
-        flash('Thanks for registering, %s' % form.username.data)
+        # User.login(user.name,user.password) # check user valid in db
 
-        # set cookie
-        name_cookie=str(form.username.data)
-        return get_respect_with_cookie('/welcome',username=name_cookie)
+        flash('Thanks for registering, %s' % name)
+
+        user_id_hash=get_secure_val(name)
+
+        return get_respect_with_cookie('/welcome',user_id=user_id_hash, PATH='/')
 
     else:
         page = render_template('signup.html', form=form)
@@ -76,7 +74,19 @@ def signup():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     form =LoginForm(request.form)
-    if(request.method=='POST' and form.validate()):
+    if (request.method == 'GET'):
+        user_id_hash=get_cookie(request, 'user_id')
+        if user_id_hash:
+            user_id=get_decoded_val(user_id_hash)
+
+            #if there is a valid cookie
+            if user_id:
+                flash('You already login %s' %user_id )
+                return redirect('/')
+
+        return render_template('login.html', form=form)
+
+    elif(request.method=='POST' and form.validate()):
         name=form.username.data
         pwd=form.password.data
 
@@ -87,25 +97,29 @@ def login():
             # print u.name
             # print u.password
             if check_password_hash(u.password,pwd):
-                flash('Login Successfully, %s' % form.username.data)
-                return get_respect_with_cookie('/welcome', username=u.name)
-            else:
-                flash('Wrong Logining' )
-                return render_template('login.html', form=form)
+                name=u.name
+                flash('Login Successfully, %s' % name)
+                name_hash=get_secure_val(name)
+                return get_respect_with_cookie('/welcome', user_id=name_hash, PATH='/')
     else:
+        print ('wrong when login, no cookie')
         return render_template('login.html', form=form)
 
 @app.route('/logout', methods=['GET'])
 def logout():
-    if get_cookie(request, 'username'):
-        return get_respect_with_cookie('/', username='')
+    user_hash=get_cookie(request, 'user_id')
+    user_name=get_decoded_val(user_hash)
+    if user_name:
+        flash('you are logging out %s' % user_name)
+        return get_respect_with_cookie('/', user_id='', PATH='')
     else:
         return 'you did not login'
 
 
 @app.route('/welcome', methods=['GET'])
 def welcome():
-    name=get_cookie(request, 'username')
+    name_hash=get_cookie(request, 'user_id')
+    name=get_decoded_val(name_hash)
 
     print name
     return render_template('welcome.html', name=name)
@@ -118,9 +132,9 @@ def welcome():
 def test():
     return str(get_cookie(request,'test'))
 
-
-if __name__ == '__main__':
-    app.run()
+#
+# if __name__ == '__main__':
+#     app.run()
 
 @app.errorhandler(500)
 def server_error(e):

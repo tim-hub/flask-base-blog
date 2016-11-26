@@ -9,5 +9,3 @@ handlers:
   script: blog_base.app
 
 #libraries:
-#- name: flask-bcrypt
-#  version: latest
