@@ -111,7 +111,7 @@ def logout():
     user_name=get_decoded_val(user_hash)
     if user_name:
         flash('you are logging out %s' % user_name)
-        return get_respect_with_cookie('/', user_id='', PATH='')
+        return get_respect_with_cookie('/signup', user_id='', PATH='')
     else:
         return 'you did not login'
 
@@ -119,10 +119,13 @@ def logout():
 @app.route('/welcome', methods=['GET'])
 def welcome():
     name_hash=get_cookie(request, 'user_id')
-    name=get_decoded_val(name_hash)
+    if name_hash:
+        name=get_decoded_val(name_hash)
 
-    print name
-    return render_template('welcome.html', name=name)
+        print name
+        return render_template('welcome.html', name=name)
+    else:
+        return redirect('/signup')
     # if name:
     #     return render_template('welcome.html', name=name)
     # else:
