@@ -3,9 +3,11 @@ api_version: 1
 threadsafe: true
 
 handlers:
+- url: /blogapp/static
+  static_dir: blogapp/static
 - url: /static
   static_dir: static
 - url: /.*
-  script: blog_base.app
+  script: blogapp.app
 
 #libraries:

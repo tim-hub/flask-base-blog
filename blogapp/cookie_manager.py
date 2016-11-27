@@ -3,9 +3,9 @@ import string
 import hmac
 
 from flask import redirect, make_response
+from blogapp import app
 
-# SALT=app.config['COOKIE_SALT']
-SALT='slat' # for test
+SALT=app.config['COOKIE_SALT']
 
 def get_respect_with_cookie(next_url, **kwargs):
     redirect_to_next_url = redirect(next_url)

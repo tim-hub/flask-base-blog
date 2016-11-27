@@ -1,18 +1,29 @@
-# from base_blog import app
+from blogapp import app
 
 from flask import Flask, flash, render_template, request
-# from wtforms.validators import DataRequired
-# from flask_wtf.csrf import CsrfProtect
+
 
 import logging
+
+
+
+
+# app = Flask(__name__, instance_relative_config=True)
+# app.config.from_object('config') # load config.py from root folder
+# app.config.from_pyfile('config.py')  # load from instance folder
+# COOKIE_SALT= app.config['COOKIE_SALT']
 
 from cookie_manager import *
 from db_manager import *
 from forms_manager import *
 
-app = Flask(__name__, instance_relative_config=True)
-app.config.from_object('config') # load config.py from root folder
-app.config.from_pyfile('config.py')  # load from instance folder
+
+@app.errorhandler(500)
+def server_error(e):
+    # Log the error and stacktrace.
+    logging.exception('An error occurred during a request.')
+    return 'An internal error occurred.', 500
+
 
 @app.route('/')
 def home():
@@ -135,12 +146,6 @@ def welcome():
 def test():
     return str(get_cookie(request,'test'))
 
-#
-# if __name__ == '__main__':
-#     app.run()
 
-@app.errorhandler(500)
-def server_error(e):
-    # Log the error and stacktrace.
-    logging.exception('An error occurred during a request.')
-    return 'An internal error occurred.', 500
+if __name__ == '__main__':
+    app.run()
