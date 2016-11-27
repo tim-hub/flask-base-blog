@@ -43,3 +43,10 @@ def hash_str(s):
     ###Your code here
     return hmac.new(SALT, s).hexdigest()
 
+def who_logined(req):
+    cookie_val = get_cookie(req, 'user_id')
+    if cookie_val:
+        user_id = get_decoded_val(cookie_val)
+        if user_id:
+            return user_id
+

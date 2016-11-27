@@ -41,6 +41,7 @@ def new_post():
             return render_template("new_post.html", error="Both subject and content are needed")
 
     else:
+
         return render_template("new_post.html")
 
 @app.route('/post/<post_id>/')
