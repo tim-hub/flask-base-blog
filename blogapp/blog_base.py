@@ -3,20 +3,13 @@ from blogapp import app
 from flask import Flask, flash, render_template, request
 
 
-import logging
-
-
-
-
-# app = Flask(__name__, instance_relative_config=True)
-# app.config.from_object('config') # load config.py from root folder
-# app.config.from_pyfile('config.py')  # load from instance folder
-# COOKIE_SALT= app.config['COOKIE_SALT']
 
 from cookie_manager import *
 from db_manager import *
 from forms_manager import *
 
+
+import logging
 
 @app.errorhandler(500)
 def server_error(e):
@@ -63,7 +56,7 @@ def signup():
     if (request.method == 'POST' and form.validate()):
         name=form.username.data
         password=form.verify.data
-        pwd_encrypted=encrypt_val(password)
+        pwd_encrypted=generate_password_hash(password)
         email=form.email.data
         user=User(name=name,password=pwd_encrypted)
         if email:
@@ -92,36 +85,36 @@ def login():
 
             #if there is a valid cookie
             if user_id:
-                flash('You already login %s' %user_id )
+                flash('You already login %s <a href="/logout">Logout</a>' %user_id )
                 return redirect('/')
 
         return render_template('login.html', form=form)
 
     elif(request.method=='POST' and form.validate()):
         name=form.username.data
-        pwd=form.password.data
+        # pwd=form.password.data
+        #
+        # user=get_this_user(name)
+        # if user:
+        #     u=user[0]
+        #     # print user
+        #     # print u.name
+        #     # print u.password
+        #     if check_password_hash(u.password,pwd):
+        # name=u.name
+        flash('Login Successfully, %s' % name)
+        name_hash=get_secure_val(name)
+        return get_respect_with_cookie('/welcome', user_id=name_hash, PATH='/')
 
-        user=get_this_user(name)
-        if user:
-            u=user[0]
-            # print user
-            # print u.name
-            # print u.password
-            if check_password_hash(u.password,pwd):
-                name=u.name
-                flash('Login Successfully, %s' % name)
-                name_hash=get_secure_val(name)
-                return get_respect_with_cookie('/welcome', user_id=name_hash, PATH='/')
-    else:
-        print ('wrong when login, no cookie')
-        return render_template('login.html', form=form)
+    print ('wrong when login, no cookie')
+    return render_template('login.html', form=form)
 
 @app.route('/logout', methods=['GET'])
 def logout():
     user_hash=get_cookie(request, 'user_id')
     user_name=get_decoded_val(user_hash)
     if user_name:
-        flash('you are logging out %s' % user_name)
+        flash('you are logging out %s <a href="/Login">Login</a> ' % user_name)
         return get_respect_with_cookie('/signup', user_id='', PATH='')
     else:
         return 'you did not login'
