@@ -1,11 +1,10 @@
-# App Engine Standard Flask Tutorial App
+# Base Blog
+GAE Flask Blog App
 
-This sample shows how to use [Flask](http://flask.pocoo.org/) to handle
-requests, forms, templates, and static files on Google App Engine Standard.
+## How To Run:
 
-Before running or deploying this application, install the dependencies using
-[pip](http://pip.readthedocs.io/en/stable/):
+    cd <project folder>
 
     pip install -t lib -r requirements.txt
 
-For more information, see the [App Engine Standard README](../../README.md)
+    dev_appserver.py .

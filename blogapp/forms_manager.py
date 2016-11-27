@@ -24,11 +24,14 @@ def registered_username(form, field):
 
 
 def right_password(form, field):
-    current_user = get_this_user(form.username.data)
-    pwd_hash=current_user[0].password
-    if not check_password_hash(pwd_hash, field.data):
-        raise ValidationError("wrong pwd")
-    # pass
+    if form.username.errors ==None:
+
+        current_user = get_this_user(form.username.data)
+
+        pwd_hash=current_user[0].password
+
+        if not check_password_hash(pwd_hash, field.data):
+            raise ValidationError("wrong pwd")
 
 
 
