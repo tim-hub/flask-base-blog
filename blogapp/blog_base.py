@@ -18,6 +18,11 @@ def server_error(e):
     logging.exception('An error occurred during a request.')
     return 'An internal error occurred.', 500
 
+@app.errorhandler(404)
+def server_error(e):
+    # Log the error and stacktrace.
+    logging.exception('An error occurred during a request.')
+    return '404 not found.', 404
 
 @app.route('/')
 def home():
@@ -45,11 +50,11 @@ def new_post():
             else:
                 print ("something wrong, there is no post id")
         else:
-            return render_template("new_post.html", error="Both subject and content are needed")
+            return render_template("new_post.html", form=form)
 
     else:
 
-        return render_template("new_post.html")
+        return render_template("new_post.html", form=form)
 #
 # @app.route('/post/<post_id>/')
 # def show_post(post_id):

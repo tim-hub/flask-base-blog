@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import Form, BooleanField, StringField, PasswordField, validators, ValidationError, TextField
+from wtforms import Form, BooleanField, StringField, PasswordField, validators, ValidationError, TextField, TextAreaField
 from werkzeug.security import generate_password_hash, \
      check_password_hash
 from db_manager import get_this_user
@@ -53,4 +53,4 @@ class LoginForm(Form):
 
 class NewPostForm(Form):
     subject=StringField('Subject', [validators.DataRequired()])
-    content=TextField('Content', [validators.DataRequired()])
+    content=TextAreaField('Content', [validators.DataRequired()])

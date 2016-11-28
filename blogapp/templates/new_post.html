@@ -2,19 +2,44 @@
 {%  block content %}
     <h2> New Post </h2>
 	<form method="post">
-		<label class="test col-xs-12">
-			<div>Subject</div>
-			<input type="text" name="subject" class="subject" value="{{title}}">
-		</label>
+		<div>
+            {{ form.subject.label }}
+
+            {{ form.subject }}
+
+            {% if form.subject.errors %}
+                <ul class=errors>
+                {% for error in form.subject.errors %}
+                  <li>{{ error }}</li>
+                {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
         <br/>
-		<label class="col-xs-12" >
-			<div>Content</div>
-			<textarea name="content" class="content">{{ art }}</textarea>
-		</label>
+{#		<label class="col-xs-12" >#}
+{#			<div>Content</div>#}
+{#			<textarea name="content" class="content">{{ form.content }}</textarea>#}
+{#            <div>#}
+{#                {{ form.subject.errors }}#}
+{#            </div>#}
+{#		</label>#}
+        <div>
+            {{ form.content.label }}
+
+            {{ form.content(cols="35", rows="20")}}
+
+            {% if form.content.errors %}
+                <ul class=errors>
+                {% for error in form.subject.errors %}
+                  <li>{{ error }}</li>
+                {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
 		<br/>
-		<div class="error col-xs-6">
-		{{error}}
-		</div>
+{#		<div class="error col-xs-6">#}
+{#		{{error}}#}
+{#		</div>#}
 		<br/>
 		<input type="submit">
 	</form>
