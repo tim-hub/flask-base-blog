@@ -11,6 +11,7 @@ from forms_manager import *
 
 import logging
 
+
 @app.errorhandler(500)
 def server_error(e):
     # Log the error and stacktrace.
@@ -21,18 +22,24 @@ def server_error(e):
 @app.route('/')
 def home():
     posts= get_posts()
-    return render_template('home.html', posts=posts)
+    if who_logined(request):
+        return render_template('home.html', posts=posts, logined=True)
+    else:
+        return render_template('home.html', posts=posts, logined=False)
 
 @app.route('/newpost', methods=['GET', 'POST'])
 def new_post():
-    if request.method=='POST':
-        subject=request.form['subject']
-        content=request.form['content']
+    form=NewPostForm(request.form)
+    if request.method=='POST' and form.validate():
+        subject=form.subject.data
+        content=form.content.data
+        user=who_logined(request)
+        key_name=create_post_id(subject)
 
         if subject and content:
-            blog_post=BlogPost(subject=subject,content=content)
+            blog_post=BlogPost( key_name=key_name, subject=subject,content=content,belong_to=user)
             blog_post.put()
-            id = (blog_post.key().id())
+            id = (blog_post.key().name())
             if id :
                 return redirect('/post/%s' %id)
             else:
@@ -43,13 +50,30 @@ def new_post():
     else:
 
         return render_template("new_post.html")
+#
+# @app.route('/post/<post_id>/')
+# def show_post(post_id):
+#
+#     print ("show post, id is %s" % post_id)
+#     blog_post = query_post_by_id((post_id))
+#     return render_template('post.html', subject=blog_post.subject, content=blog_post.content)
+#
+#     # post_query=query_post_by_id(post_id)
+#     # if post_query.count()>0:
+#     #     blog_post=post_query[0]
+#     #
+#     #     return render_template('post.html', subject=blog_post.subject, content=blog_post.content)
 
-@app.route('/post/<post_id>/')
-def show_post(post_id):
-    print ("show post, id is %s" %post_id)
-    blog_post=BlogPost.get_by_id(long(post_id))
-    return render_template('post.html', subject=blog_post.subject, content=blog_post.content)
 
+@app.route('/post/<key_name>/')
+def show_post(key_name):
+    print ("show post, id is %s" % key_name)
+    # blog_post = query_post_by_key((key_name))
+    k=db.Key.from_path('BlogPost', key_name )
+    # more on https://cloud.google.com/appengine/docs/python/datastore/entities
+
+    blog_post=db.get(k)
+    return render_template('post.html',subject=blog_post.subject, content=blog_post.content)
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
@@ -80,15 +104,10 @@ def signup():
 def login():
     form =LoginForm(request.form)
     if (request.method == 'GET'):
-        user_id_hash=get_cookie(request, 'user_id')
-        if user_id_hash:
-            user_id=get_decoded_val(user_id_hash)
-
-            #if there is a valid cookie
-            if user_id:
-                flash('You already login %s <a href="/logout">Logout</a>' %user_id )
-                return redirect('/')
-
+        user_id=who_logined(request)
+        if user_id:
+            flash('You already login %s ' %user_id )
+            return redirect('/')
         return render_template('login.html', form=form)
 
     elif(request.method=='POST' and form.validate()):
@@ -112,10 +131,9 @@ def login():
 
 @app.route('/logout', methods=['GET'])
 def logout():
-    user_hash=get_cookie(request, 'user_id')
-    user_name=get_decoded_val(user_hash)
+    user_name=who_logined(request)
     if user_name:
-        flash('you are logging out %s <a href="/Login">Login</a> ' % user_name)
+        flash('you are logging out %s  ' % user_name)
         return get_respect_with_cookie('/signup', user_id='', PATH='')
     else:
         return 'you did not login'
@@ -123,10 +141,8 @@ def logout():
 
 @app.route('/welcome', methods=['GET'])
 def welcome():
-    name_hash=get_cookie(request, 'user_id')
-    if name_hash:
-        name=get_decoded_val(name_hash)
-
+    name=who_logined(request)
+    if name:
         print name
         return render_template('welcome.html', name=name)
     else:

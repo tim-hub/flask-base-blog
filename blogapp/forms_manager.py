@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import Form, BooleanField, StringField, PasswordField, validators, ValidationError
+from wtforms import Form, BooleanField, StringField, PasswordField, validators, ValidationError, TextField
 from werkzeug.security import generate_password_hash, \
      check_password_hash
 from db_manager import get_this_user
@@ -34,7 +34,6 @@ def right_password(form, field):
             raise ValidationError("wrong pwd")
 
 
-
 class SignUpForm(Form):
     username = StringField('Username', [validators.Length(min=3, max=20), validate_username])
 
@@ -51,3 +50,7 @@ class SignUpForm(Form):
 class LoginForm(Form):
     username= StringField('Username', [validators.DataRequired(), registered_username])
     password= PasswordField('Password', [validators.DataRequired(),right_password])
+
+class NewPostForm(Form):
+    subject=StringField('Subject', [validators.DataRequired()])
+    content=TextField('Content', [validators.DataRequired()])
