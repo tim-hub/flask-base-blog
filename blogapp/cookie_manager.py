@@ -2,7 +2,7 @@ import random
 import string
 import hmac
 
-from flask import redirect, make_response
+from flask import redirect, make_response, session
 from blogapp import app
 
 SALT=app.config['COOKIE_SALT']
@@ -43,6 +43,7 @@ def hash_str(s):
     ###Your code here
     return hmac.new(SALT, s).hexdigest()
 
+# use cookie to remember who login
 def who_logined(req):
     cookie_val = get_cookie(req, 'user_id')
     if cookie_val:
@@ -50,3 +51,14 @@ def who_logined(req):
         if user_id:
             return user_id
 
+
+def check_login_session(req):
+    s=get_cookie(req, 'session')
+    if s:
+        return True
+
+def who_logined_session(req):
+    s=get_cookie(req, 'session')
+    if s:
+        return True
+    return session['name']

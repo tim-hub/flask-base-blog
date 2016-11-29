@@ -1,6 +1,6 @@
 from blogapp import app
 
-from flask import Flask, flash, render_template, request
+from flask import Flask, flash, render_template, request, session
 
 
 
@@ -26,8 +26,13 @@ def server_error(e):
 
 @app.route('/')
 def home():
+
     posts= get_posts()
-    if who_logined(request):
+    #user cookies
+    # if who_logined(request):
+    #     return render_template('home.html', posts=posts, logined=True)
+    if check_login_session(request):
+
         return render_template('home.html', posts=posts, logined=True)
     else:
         return render_template('home.html', posts=posts, logined=False)
@@ -39,11 +44,13 @@ def new_post():
         subject=form.subject.data
         content=form.content.data
         user=who_logined(request)
+        # generate a identity  (time+part of title + random number)
         key_name=create_post_id(subject)
 
         if subject and content:
             blog_post=BlogPost( key_name=key_name, subject=subject,content=content,belong_to=user)
             blog_post.put()
+
             id = (blog_post.key().name())
             if id :
                 return redirect('/post/%s' %id)
@@ -70,6 +77,9 @@ def new_post():
 #     #     return render_template('post.html', subject=blog_post.subject, content=blog_post.content)
 
 
+
+''' Use the key name as the post id
+'''
 @app.route('/post/<key_name>/')
 def show_post(key_name):
     print ("show post, id is %s" % key_name)
@@ -79,6 +89,34 @@ def show_post(key_name):
 
     blog_post=db.get(k)
     return render_template('post.html',subject=blog_post.subject, content=blog_post.content)
+
+# @app.route('/post/edit/<key_name>')
+# def edit_post(key_name):
+#     print ('edit post')
+#     k = db.Key.from_path('BlogPost', key_name)
+#     blog_post = db.get(k)
+#     if blog_post.belong_to==session['name']:
+#         #edit
+#         pass
+#     else:
+#         # show notification
+#         pass
+#
+#     return render_template('edit_post.html', subject=blog_post.subject, content=blog_post.content)
+#
+# @app.route('/post/delete/<key_name>')
+# def edit_post(key_name):
+#     print ('delete post')
+#     k = db.Key.from_path('BlogPost', key_name)
+#     blog_post = db.get(k)
+#     if blog_post.belong_to==session['name']:
+#         #edit
+#         pass
+#     else:
+#         # show notification
+#         pass
+#
+#     return render_template('edit_post.html', subject=blog_post.subject, content=blog_post.content)
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
@@ -97,9 +135,15 @@ def signup():
 
         flash('Thanks for registering, %s' % name)
 
-        user_id_hash=get_secure_val(name)
 
-        return get_respect_with_cookie('/welcome',user_id=user_id_hash, PATH='/')
+        #user cookies
+        # user_id_hash=get_secure_val(name)
+        #
+        # return get_respect_with_cookie('/welcome',user_id=user_id_hash, PATH='/')
+
+        #use session
+        session['name']=name
+        return redirect('/welcome')
 
     else:
         page = render_template('signup.html', form=form)
@@ -109,13 +153,17 @@ def signup():
 def login():
     form =LoginForm(request.form)
     if (request.method == 'GET'):
-        user_id=who_logined(request)
-        if user_id:
-            flash('You already login %s ' %user_id )
-            return redirect('/')
+        # use cookies
+        # user_id=who_logined(request)
+        # use session
+        if check_login_session(request):
+            user_id=who_logined_session()
+            if user_id:
+                flash('You already login %s ' %user_id )
+                return redirect('/')
         return render_template('login.html', form=form)
 
-    elif(request.method=='POST' and form.validate()):
+    elif(request.method=='POST' and form.validate()): #form will check the user and pwd validate or not
         name=form.username.data
         # pwd=form.password.data
         #
@@ -128,25 +176,47 @@ def login():
         #     if check_password_hash(u.password,pwd):
         # name=u.name
         flash('Login Successfully, %s' % name)
-        name_hash=get_secure_val(name)
-        return get_respect_with_cookie('/welcome', user_id=name_hash, PATH='/')
 
-    print ('wrong when login, no cookie')
+        #user cookies directly
+        # name_hash=get_secure_val(name)
+
+        # return get_respect_with_cookie('/welcome', user_id=name_hash, PATH='/')
+
+        ## use session
+        session['name'] = name
+        return redirect('/welcome')
+
+
     return render_template('login.html', form=form)
 
 @app.route('/logout', methods=['GET'])
 def logout():
-    user_name=who_logined(request)
-    if user_name:
-        flash('you are logging out %s  ' % user_name)
-        return get_respect_with_cookie('/signup', user_id='', PATH='')
-    else:
-        return 'you did not login'
+    #use cookies
+    # user_name=who_logined(request)
+    # if user_name:
+    #     flash('you are logging out %s  ' % user_name)
+    #     return get_respect_with_cookie('/signup', user_id='', PATH='')
+    # else:
+    #     return 'you did not login'
+    #use session
+    if check_login_session(request):
+        user_name= who_logined_session()
+        if user_name:
+            flash('you are logging out %s  ' % user_name)
+            # use sessions
+            session.pop('name', None)
+            return redirect('/signup')
+            # use cookies
+            # return get_respect_with_cookie('/signup', user_id='', PATH='')
 
+    return 'you did not login'
 
 @app.route('/welcome', methods=['GET'])
 def welcome():
-    name=who_logined(request)
+    #use cookie
+    # name=who_logined(request)
+    #use session
+    name=session['name']
     if name:
         print name
         return render_template('welcome.html', name=name)

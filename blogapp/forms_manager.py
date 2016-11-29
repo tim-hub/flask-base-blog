@@ -24,12 +24,13 @@ def registered_username(form, field):
 
 
 def right_password(form, field):
-    if form.username.errors ==None:
+    print form.username.data
+    print form.username.errors
+    if len(form.username.errors) ==0: # check the usename is right,if right then check pwd
 
         current_user = get_this_user(form.username.data)
 
         pwd_hash=current_user[0].password
-
         if not check_password_hash(pwd_hash, field.data):
             raise ValidationError("wrong pwd")
 
@@ -49,7 +50,7 @@ class SignUpForm(Form):
     # accept_tos = BooleanField('I accept the TOS', [validators.DataRequired()])
 class LoginForm(Form):
     username= StringField('Username', [validators.DataRequired(), registered_username])
-    password= PasswordField('Password', [validators.DataRequired(),right_password])
+    password= PasswordField('Password', [right_password, validators.DataRequired()])
 
 class NewPostForm(Form):
     subject=StringField('Subject', [validators.DataRequired()])
