@@ -1,0 +1,4 @@
+CSRF_ENABLED = False
+COOKIE_SALT= 'slat'
+FLASK_KEY= 'flask'
+SECRET_KEY = 'key'+COOKIE_SALT
